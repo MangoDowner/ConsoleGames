@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,34 +10,35 @@ namespace Tower
     {
         const int width = 13;
         const int height = 13;
-        public static List<Container> element = new List<Container>();//封装所有数据
-        
-        public static int a = 0;//层数
-        public static string s = null;
-        public static int Tmp_a = 0;
+        public static List<Container> element = new List<Container>(); //封装所有数据
 
-        public static int MapPos(int x,int y)
+        private static int level = 0; //层数
+        private static string promptTxt = null; // 提示文本
+        private static int TmpA = 0;
+
+        public static int MapPos(int x, int y)
         {
-            int next_Pos = y * width + x;
-            return next_Pos;
+            int nextPos = y * width + x;
+            return nextPos;
         }
-        public static void MapXy(int next_pos,out int x,out int y)
+
+        private static void MapXy(int next_pos, out int x, out int y)
         {
             y = next_pos / width;
             x = next_pos % width;
-            
         }
 
-        public static void Describe(char[,] maps, ConsoleColor[,] color_buffer)//画各种物品的形状 
+        private static void Describe(char[,] maps, ConsoleColor[,] color_buffer) //画各种物品的形状 
         {
-            foreach (var pair in element[a].wall) //画墙壁
+            foreach (var pair in element[level].wall) //画墙壁
             {
                 int x, y;
                 x = y = 0;
-                MapXy(pair.Key,out x,out y);
+                MapXy(pair.Key, out x, out y);
                 maps[x, y] = '█';
             }
-            foreach (var pair in element[a].gate)//画门
+
+            foreach (var pair in element[level].gate) //画门
             {
                 if (pair.Value.type == ConsoleKey2.Yellow)
                 {
@@ -47,7 +48,7 @@ namespace Tower
                     maps[x, y] = '〓';
                     color_buffer[x, y] = ConsoleColor.Yellow;
                 }
-                else if (pair.Value.type==ConsoleKey2.Blue)
+                else if (pair.Value.type == ConsoleKey2.Blue)
                 {
                     int x, y;
                     x = y = 0;
@@ -63,9 +64,9 @@ namespace Tower
                     maps[x, y] = '〓';
                     color_buffer[x, y] = ConsoleColor.Red;
                 }
-
             }
-            foreach (var pair in element[a].eq)//画道具
+
+            foreach (var pair in element[level].eq) //画道具
             {
                 if (pair.Value.Name == "圣剑")
                 {
@@ -116,7 +117,8 @@ namespace Tower
                     color_buffer[x, y] = ConsoleColor.Red;
                 }
             }
-            foreach (var pair in element[a].ms)//画怪物
+
+            foreach (var pair in element[level].ms) //画怪物
             {
                 if (pair.Value.Name == "小蝙蝠")
                 {
@@ -169,7 +171,8 @@ namespace Tower
                     color_buffer[x, y] = ConsoleColor.Red;
                 }
             }
-            foreach (var pair in element[a].key)//画钥匙
+
+            foreach (var pair in element[level].key) //画钥匙
             {
                 if (pair.Value.type == ConsoleKey2.Yellow)
                 {
@@ -196,7 +199,8 @@ namespace Tower
                     color_buffer[x, y] = ConsoleColor.Blue;
                 }
             }
-            foreach (var pair in element[a].stair)
+
+            foreach (var pair in element[level].stair)
             {
                 if (pair.Value.type == Dict.Up)
                 {
@@ -213,7 +217,8 @@ namespace Tower
                     maps[x, y] = '↓';
                 }
             }
-            foreach (var pair in element[a].npc)
+
+            foreach (var pair in element[level].npc)
             {
                 int x, y;
                 x = y = 0;
@@ -221,7 +226,8 @@ namespace Tower
                 maps[x, y] = 'N';
                 color_buffer[x, y] = ConsoleColor.DarkBlue;
             }
-            foreach (var pair in element[a].func)//画功能道具
+
+            foreach (var pair in element[level].func) //画功能道具
             {
                 if (pair.Value.Name == "楼层跳跃魔杖")
                 {
@@ -242,206 +248,214 @@ namespace Tower
             }
         }
 
-        public static bool MovePlye(Play play)
+        private static bool MovePlayer(Play play)
         {
-            
-            if (Tmp_a<a)
+            if (TmpA < level)
             {
-                Tmp_a = a;
+                TmpA = level;
             }
-            ConsoleKeyInfo key = Console.ReadKey();
-            int Tmp_x = play.x;
-            int Tmp_y = play.y;
-            if (key.Key == ConsoleKey.UpArrow)//获取输入，并改变玩家的坐标
+
+            var key = Console.ReadKey();
+            int tmpX = play.x, tmpY = play.y; // 移动后的位置
+            // 处理各种输入
+            switch (key.Key)
             {
-                Tmp_x -= 1;
-            }
-            else if (key.Key == ConsoleKey.DownArrow)
-            {
-                Tmp_x += 1;
-            }
-            else if (key.Key == ConsoleKey.LeftArrow)
-            {
-                Tmp_y -= 1;
-            }
-            else if (key.Key == ConsoleKey.RightArrow)
-            {
-                Tmp_y += 1;
-            }
-            else if (key.Key == ConsoleKey.B)//使用楼层跳跃功能
-            {
-                if (play.Jump)
+                //获取输入，并改变玩家的坐标
+                case ConsoleKey.W:
+                case ConsoleKey.UpArrow:
+                    tmpX -= 1;
+                    break;
+                case ConsoleKey.S:
+                case ConsoleKey.DownArrow:
+                    tmpX += 1;
+                    break;
+                case ConsoleKey.A:
+                case ConsoleKey.LeftArrow:
+                    tmpY -= 1;
+                    break;
+                case ConsoleKey.D:
+                case ConsoleKey.RightArrow:
+                    tmpY += 1;
+                    break;
+                //使用楼层跳跃功能
+                case ConsoleKey.B:
                 {
-                    int Tmp_b = 0;
-                    bool c = false;
+                    // 不能跳直接返回
+                    if (!play.Jump) return true;
+
                     Console.Clear();
                     Console.WriteLine("输入你想到达的楼层");
-                    while (!c)
+                    var selectLevel = 0;
+                    var isValidLevel = false;
+                    while (!isValidLevel)
                     {
-                        string Tmp_ss;
-                        Tmp_ss = Console.ReadLine();
-                        c = int.TryParse(Tmp_ss, out Tmp_b);
-                        if (Tmp_b < 0 || Tmp_b > Tmp_a + 1)
-                        {
-                            c = false;
-                        }
+                        var inputLevel = Console.ReadLine();
+                        int.TryParse(inputLevel, out selectLevel);
+                        isValidLevel = selectLevel >= 0 && selectLevel <= TmpA + 1;
                     }
-                    if (a < Tmp_b - 1)
+
+                    // 来到低级关卡出现在左上方 / 否则右下方
+                    if (level < selectLevel - 1)
                     {
-                        a = Tmp_b - 1;
-                        play.x = element[a].Up_x;
-                        play.y = element[a].Up_y;
-                        s = "玩家使用了道具来到" + (a + 1) + "层";
+                        level = selectLevel - 1;
+                        play.x = element[level].UpX;
+                        play.y = element[level].UpY;
+                        promptTxt = "玩家使用了道具来到" + (level + 1) + "层";
                     }
-                    else if (a > Tmp_b - 1)
+                    else if (level > selectLevel - 1)
                     {
-                        a = Tmp_b - 1;
-                        play.x = element[a].Down_x;
-                        play.y = element[a].Down_y;
-                        s = "玩家使用了道具来到" + (a + 1) + "层";
+                        level = selectLevel - 1;
+                        play.x = element[level].DownX;
+                        play.y = element[level].DownLeft;
+                        promptTxt = "玩家使用了道具来到" + (level + 1) + "层";
                     }
                     else
                     {
                         return true;
                     }
 
+                    return true;
                 }
-                return true;
-            }
-            else if (key.Key == ConsoleKey.Y)
-            {
-                if (play.See)
+                case ConsoleKey.Y:
                 {
-                    Console.Clear();
-
-
-                    foreach (var pair in element[a].ms)
+                    if (!play.See)
                     {
-                        int Tmp_HP, Tmp_Atk, Tmp_Dfs;
-                        Tmp_HP = play.Hp;
-                        Tmp_Atk = play.Atk;
-                        Tmp_Dfs = play.Dfs;
-                        int Tmp_a = pair.Value.Battle2(Tmp_Atk,Tmp_Dfs,Tmp_HP);
+                        break;
+                    }
+
+                    Console.Clear();
+                    foreach (var pair in element[level].ms)
+                    {
+                        var Tmp_HP = play.Hp;
+                        var Tmp_Atk = play.Atk;
+                        var Tmp_Dfs = play.Dfs;
+                        int Tmp_a = pair.Value.Battle2(Tmp_Atk, Tmp_Dfs, Tmp_HP);
                         if (Tmp_a == 9999)
                         {
-                            Console.WriteLine("怪物{0}，血量{1}，攻击力{2}，防御力{3},打不过！", pair.Value.Name, pair.Value.Hp, pair.Value.Atk, pair.Value.Dfs);
+                            Console.WriteLine("怪物{0}，血量{1}，攻击力{2}，防御力{3},打不过！", pair.Value.Name, pair.Value.Hp,
+                                pair.Value.Atk, pair.Value.Dfs);
                         }
                         else
                         {
-                            Console.WriteLine("怪物{0}，血量{1}，攻击力{2}，防御力{3},预计损伤{4}点", pair.Value.Name, pair.Value.Hp, pair.Value.Atk, pair.Value.Dfs,Tmp_a);
+                            Console.WriteLine("怪物{0}，血量{1}，攻击力{2}，防御力{3},预计损伤{4}点", pair.Value.Name, pair.Value.Hp,
+                                pair.Value.Atk, pair.Value.Dfs, Tmp_a);
                         }
                     }
+
                     Console.ReadKey();
                     return true;
                 }
+                default:
+                    return true;
             }
-            else
+
+            if (tmpX < 1 || tmpX > 11 || tmpY < 1 || tmpY > 11)
             {
                 return true;
             }
-            if (Tmp_x < 1 || Tmp_x >11 || Tmp_y < 1||Tmp_y >11)
-            {
-                return true;
-            }
-            int Tmp_pos = MapPos(Tmp_x,Tmp_y);
 
-            if (element[a].wall.ContainsKey(Tmp_pos))//如果下一步是墙
-            {
+            int Tmp_pos = MapPos(tmpX, tmpY);
 
-            }
-            else if (element[a].gate.ContainsKey(Tmp_pos))//如果下一步是门
+            if (element[level].wall.ContainsKey(Tmp_pos)) //如果下一步是墙
             {
-                if (element[a].gate[Tmp_pos].type == ConsoleKey2.Yellow && play.relKey > 0)
+            }
+            else if (element[level].gate.ContainsKey(Tmp_pos)) //如果下一步是门
+            {
+                if (element[level].gate[Tmp_pos].type == ConsoleKey2.Yellow && play.relKey > 0)
                 {
                     play.relKey -= 1;
-                    s = "打开了黄色门，黄色钥匙数量-1";
-                    element[a].gate.Remove(Tmp_pos);
+                    promptTxt = "打开了黄色门，黄色钥匙数量-1";
+                    element[level].gate.Remove(Tmp_pos);
                     return true;
                 }
-                else if (element[a].gate[Tmp_pos].type==ConsoleKey2.Blue && play.BlueKey>0)
+                else if (element[level].gate[Tmp_pos].type == ConsoleKey2.Blue && play.BlueKey > 0)
                 {
                     play.BlueKey -= 1;
-                    s = "打开了蓝色门，蓝色钥匙数量-1";
-                    element[a].gate.Remove(Tmp_pos);
+                    promptTxt = "打开了蓝色门，蓝色钥匙数量-1";
+                    element[level].gate.Remove(Tmp_pos);
                     return true;
                 }
-                else if (element[a].gate[Tmp_pos].type == ConsoleKey2.red && play.RedKey > 0)
+                else if (element[level].gate[Tmp_pos].type == ConsoleKey2.red && play.RedKey > 0)
                 {
                     play.RedKey -= 1;
-                    s = "打开了红色门，红色钥匙数量-1";
-                    element[a].gate.Remove(Tmp_pos);
+                    promptTxt = "打开了红色门，红色钥匙数量-1";
+                    element[level].gate.Remove(Tmp_pos);
                     return true;
                 }
-                s = "相应颜色钥匙数量不足，无法打开门";
+
+                promptTxt = "相应颜色钥匙数量不足，无法打开门";
             }
-            else if (element[a].eq.ContainsKey(Tmp_pos))//如果下一步是道具
+            else if (element[level].eq.ContainsKey(Tmp_pos)) //如果下一步是道具
             {
-                s = "捡到了" + element[a].eq[Tmp_pos].Name+"属性提升";
-                play.Hp = play.Hp + element[a].eq[Tmp_pos].AddHp;
-                play.Atk = play.Atk + element[a].eq[Tmp_pos].Addatk;
-                play.Dfs = play.Dfs + element[a].eq[Tmp_pos].Adddfs;
-                element[a].eq.Remove(Tmp_pos);
+                promptTxt = "捡到了" + element[level].eq[Tmp_pos].Name + "属性提升";
+                play.Hp = play.Hp + element[level].eq[Tmp_pos].AddHp;
+                play.Atk = play.Atk + element[level].eq[Tmp_pos].Addatk;
+                play.Dfs = play.Dfs + element[level].eq[Tmp_pos].Adddfs;
+                element[level].eq.Remove(Tmp_pos);
             }
-            else if (element[a].key.ContainsKey(Tmp_pos))//如果下一步是钥匙
+            else if (element[level].key.ContainsKey(Tmp_pos)) //如果下一步是钥匙
             {
-                if (element[a].key[Tmp_pos].type == ConsoleKey2.Yellow)
+                if (element[level].key[Tmp_pos].type == ConsoleKey2.Yellow)
                 {
                     play.relKey += 1;
-                    s = "捡到了黄色钥匙，黄钥匙数量加1";
+                    promptTxt = "捡到了黄色钥匙，黄钥匙数量加1";
                 }
-                else if (element[a].key[Tmp_pos].type == ConsoleKey2.Blue)
+                else if (element[level].key[Tmp_pos].type == ConsoleKey2.Blue)
                 {
                     play.BlueKey += 1;
-                    s = "捡到了蓝色钥匙，蓝钥匙数量加1";
+                    promptTxt = "捡到了蓝色钥匙，蓝钥匙数量加1";
                 }
-                else if (element[a].key[Tmp_pos].type == ConsoleKey2.red)
+                else if (element[level].key[Tmp_pos].type == ConsoleKey2.red)
                 {
                     play.RedKey += 1;
-                    s = "捡到了红色钥匙，红钥匙数量加1";
+                    promptTxt = "捡到了红色钥匙，红钥匙数量加1";
                 }
-                element[a].key.Remove(Tmp_pos);
+
+                element[level].key.Remove(Tmp_pos);
             }
-            else if (element[a].ms.ContainsKey(Tmp_pos))//如果下一步是怪物
+            else if (element[level].ms.ContainsKey(Tmp_pos)) //如果下一步是怪物
             {
                 int Tmp_Hp = play.Hp;
-                bool c = element[a].ms[Tmp_pos].Battle(play);
+                bool c = element[level].ms[Tmp_pos].Battle(play);
                 if (c == false)
                 {
                     return false;
                 }
-                else if (c==true)
+                else if (c == true)
                 {
-                    s = "与怪物" + element[a].ms[Tmp_pos].Name + "战斗，血量减少" + (Tmp_Hp-play.Hp)+"点"+"经验增加"+ element[a].ms[Tmp_pos].Level * 10+"金币增加"+ element[a].ms[Tmp_pos].Level * 10;
-                    play.Exp = play.Exp + element[a].ms[Tmp_pos].Level * 5;
-                    play.Money = play.Money + element[a].ms[Tmp_pos].Level * 5;
-                    element[a].ms.Remove(Tmp_pos);
-                    
+                    promptTxt = "与怪物" + element[level].ms[Tmp_pos].Name + "战斗，血量减少" + (Tmp_Hp - play.Hp) + "点" +
+                                "经验增加" +
+                                element[level].ms[Tmp_pos].Level * 10 + "金币增加" + element[level].ms[Tmp_pos].Level * 10;
+                    play.Exp = play.Exp + element[level].ms[Tmp_pos].Level * 5;
+                    play.Money = play.Money + element[level].ms[Tmp_pos].Level * 5;
+                    element[level].ms.Remove(Tmp_pos);
                 }
             }
-            else if (element[a].stair.ContainsKey(Tmp_pos))//如果下一步是楼梯
+            else if (element[level].stair.ContainsKey(Tmp_pos)) //如果下一步是楼梯
             {
-                if (element[a].stair[Tmp_pos].type == Dict.Up)
+                if (element[level].stair[Tmp_pos].type == Dict.Up)
                 {
-                    a = a + 1;
-                    if (a>=10)
+                    level = level + 1;
+                    if (level >= 10)
                     {
                         return false;
                     }
-                    element[a].map1s.color_buffer[play.x, play.y] = ConsoleColor.Gray;
-                    play.x = element[a].Up_x;
-                    play.y = element[a].Up_y;
+
+                    element[level].map1s.color_buffer[play.x, play.y] = ConsoleColor.Gray;
+                    play.x = element[level].UpX;
+                    play.y = element[level].UpY;
                 }
-                else if (element[a].stair[Tmp_pos].type == Dict.Down)
+                else if (element[level].stair[Tmp_pos].type == Dict.Down)
                 {
-                    a = a - 1;
-                    element[a].map1s.color_buffer[play.x, play.y] = ConsoleColor.Gray;
-                    play.x = element[a].Down_x;
-                    play.y = element[a].Down_y;   
+                    level = level - 1;
+                    element[level].map1s.color_buffer[play.x, play.y] = ConsoleColor.Gray;
+                    play.x = element[level].DownX;
+                    play.y = element[level].DownLeft;
                 }
             }
-            else if (element[a].npc.ContainsKey(Tmp_pos))//如果下一步是Npc
+            else if (element[level].npc.ContainsKey(Tmp_pos)) //如果下一步是Npc
             {
-                if (element[a].npc[Tmp_pos].Name == "恶魔商店")
+                if (element[level].npc[Tmp_pos].Name == "恶魔商店")
                 {
                     int h = 0;
                     bool c = false;
@@ -459,13 +473,15 @@ namespace Tower
                             c = false;
                         }
                     }
+
                     if (h == 1)
                     {
-                        if (play.Money<50)
+                        if (play.Money < 50)
                         {
-                            s = "金币不够，购买失败！";
+                            promptTxt = "金币不够，购买失败！";
                             return true;
                         }
+
                         play.Money -= 50;
                         play.Atk += 10;
                     }
@@ -473,9 +489,10 @@ namespace Tower
                     {
                         if (play.Money < 50)
                         {
-                            s = "金币不够，购买失败！";
+                            promptTxt = "金币不够，购买失败！";
                             return true;
                         }
+
                         play.Money -= 50;
                         play.Hp += 100;
                     }
@@ -483,16 +500,19 @@ namespace Tower
                     {
                         if (play.Money < 50)
                         {
-                            s = "金币不够，购买失败！";
+                            promptTxt = "金币不够，购买失败！";
                             return true;
                         }
+
                         play.Money -= 50;
                         play.Dfs += 10;
                     }
-                    s = "购买成功，感谢光临！";
+
+                    promptTxt = "购买成功，感谢光临！";
                     return true;
                 }
-                else if (element[a].npc[Tmp_pos].Name == "经验商人")
+
+                if (element[level].npc[Tmp_pos].Name == "经验商人")
                 {
                     int h = 0;
                     bool c = false;
@@ -511,13 +531,15 @@ namespace Tower
                             c = false;
                         }
                     }
+
                     if (h == 1)
                     {
-                        if (play.Exp<50)
+                        if (play.Exp < 50)
                         {
-                            s = "经验不足，购买失败";
+                            promptTxt = "经验不足，购买失败";
                             return true;
                         }
+
                         play.Exp -= 50;
                         play.Atk += 10;
                     }
@@ -525,9 +547,10 @@ namespace Tower
                     {
                         if (play.Exp < 50)
                         {
-                            s = "经验不足，购买失败";
+                            promptTxt = "经验不足，购买失败";
                             return true;
                         }
+
                         play.Exp -= 50;
                         play.Hp += 100;
                     }
@@ -535,9 +558,10 @@ namespace Tower
                     {
                         if (play.Exp < 50)
                         {
-                            s = "经验不足，购买失败";
+                            promptTxt = "经验不足，购买失败";
                             return true;
                         }
+
                         play.Exp -= 50;
                         play.Dfs += 10;
                     }
@@ -545,19 +569,21 @@ namespace Tower
                     {
                         if (play.Exp < 100)
                         {
-                            s = "经验不足，购买失败";
+                            promptTxt = "经验不足，购买失败";
                             return true;
                         }
+
                         play.Exp -= 100;
                         play.Dfs += 5;
                         play.Atk += 5;
                         play.Level += 1;
                         play.Hp += 50;
                     }
-                    s = "购买成功，感谢光临！";
+
+                    promptTxt = "购买成功，感谢光临！";
                     return true;
                 }
-                else if (element[a].npc[Tmp_pos].Name == "钥匙商人")
+                else if (element[level].npc[Tmp_pos].Name == "钥匙商人")
                 {
                     int h = 0;
                     bool c = false;
@@ -575,13 +601,15 @@ namespace Tower
                             c = false;
                         }
                     }
+
                     if (h == 1)
                     {
                         if (play.Money < 100)
                         {
-                            s = "金币不够，购买失败！";
+                            promptTxt = "金币不够，购买失败！";
                             return true;
                         }
+
                         play.Money -= 100;
                         play.RedKey += 1;
                     }
@@ -589,9 +617,10 @@ namespace Tower
                     {
                         if (play.Money < 70)
                         {
-                            s = "金币不够，购买失败！";
+                            promptTxt = "金币不够，购买失败！";
                             return true;
                         }
+
                         play.Money -= 70;
                         play.BlueKey += 1;
                     }
@@ -599,66 +628,68 @@ namespace Tower
                     {
                         if (play.Money < 30)
                         {
-                            s = "金币不够，购买失败！";
+                            promptTxt = "金币不够，购买失败！";
                             return true;
                         }
+
                         play.Money -= 30;
                         play.relKey += 1;
                     }
-                    s = "购买成功，感谢光临！";
+
+                    promptTxt = "购买成功，感谢光临！";
                     return true;
                 }
-                else if (element[a].npc[Tmp_pos].Name == "老人")
+                else if (element[level].npc[Tmp_pos].Name == "老人")
                 {
-                    s = element[a].npc[Tmp_pos].Dialogue;
+                    promptTxt = element[level].npc[Tmp_pos].Dialogue;
                     play.relKey++;
                     play.BlueKey++;
                     play.RedKey++;
-                    element[a].npc.Remove(Tmp_pos);
+                    element[level].npc.Remove(Tmp_pos);
                 }
-                else if (element[a].npc[Tmp_pos].Name == "富商")
+                else if (element[level].npc[Tmp_pos].Name == "富商")
                 {
-                    s = element[a].npc[Tmp_pos].Dialogue;
+                    promptTxt = element[level].npc[Tmp_pos].Dialogue;
                     play.Money += 200;
-                    element[a].npc.Remove(Tmp_pos);
+                    element[level].npc.Remove(Tmp_pos);
                 }
-                else if (element[a].npc[Tmp_pos].Name == "祭师")
+                else if (element[level].npc[Tmp_pos].Name == "祭师")
                 {
-                    s = element[a].npc[Tmp_pos].Dialogue;
+                    promptTxt = element[level].npc[Tmp_pos].Dialogue;
                     play.Level += 3;
                     play.Hp += 3 * 50;
                     play.Atk += 3 * 5;
                     play.Dfs += 3 * 5;
-                    element[a].npc.Remove(Tmp_pos);
+                    element[level].npc.Remove(Tmp_pos);
                 }
             }
-            else if (element[a].func.ContainsKey(Tmp_pos))//如果下一步是功能道具
+            else if (element[level].func.ContainsKey(Tmp_pos)) //如果下一步是功能道具
             {
-                if (element[a].func[Tmp_pos].Name == "楼层跳跃魔杖")
+                if (element[level].func[Tmp_pos].Name == "楼层跳跃魔杖")
                 {
                     play.Jump = true;
-                    s = "玩家获得了楼层跳跃魔杖，开启了楼层跳跃功能,按B键开启楼层跳跃功能";
-                    element[a].func.Remove(Tmp_pos);
+                    promptTxt = "玩家获得了楼层跳跃魔杖，开启了楼层跳跃功能,按B键开启楼层跳跃功能";
+                    element[level].func.Remove(Tmp_pos);
                     return true;
                 }
-                else if (element[a].func[Tmp_pos].Name =="怪物字典")
+                else if (element[level].func[Tmp_pos].Name == "怪物字典")
                 {
                     play.See = true;
-                    s = "玩家获得了怪物字典，开启了查看怪物属性功能,按Y键开启查看功能";
-                    element[a].func.Remove(Tmp_pos);
+                    promptTxt = "玩家获得了怪物字典，开启了查看怪物属性功能,按Y键开启查看功能";
+                    element[level].func.Remove(Tmp_pos);
                     return true;
                 }
             }
             else
             {
-                element[a].map1s.color_buffer[play.x, play.y] = ConsoleColor.Gray;
-                MapXy(Tmp_pos,out play.x,out play.y);
-                
+                element[level].map1s.color_buffer[play.x, play.y] = ConsoleColor.Gray;
+                MapXy(Tmp_pos, out play.x, out play.y);
             }
+
             return true;
         }
 
-        public static void Print(char[,] a,ConsoleColor[,] b)
+        public static void Print(char[,] a, ConsoleColor[,] b)
         {
             for (int i = 0; i < 13; i++)
             {
@@ -666,28 +697,26 @@ namespace Tower
                 {
                     if (j == 12)
                     {
-                    
                         Console.ForegroundColor = b[i, j];
                         Console.WriteLine(a[i, j]);
-                       
-                        
+
+
                         break;
                     }
+
                     if (a[i, j] < 128)
                     {
-
                         Console.ForegroundColor = b[i, j];
                         Console.Write(a[i, j]);
-                        
+
                         Console.Write(" ");
                         continue;
                     }
+
                     Console.ForegroundColor = b[i, j];
                     Console.Write(a[i, j]);
-                    
                 }
             }
-
         }
 
         static void Main(string[] args)
@@ -696,21 +725,24 @@ namespace Tower
             Checkpoint gk = new Checkpoint();
             gk.check();
             bool m = true;
-            s = "目标：打败魔王，冲上11层";
+            promptTxt = "目标：打败魔王，冲上11层";
             while (m)
             {
-                Console.WriteLine("当前关卡{0},血量{1},攻击力{2},防御力{3},黄钥匙{4},蓝钥匙{5},红钥匙{6},等级{7},经验{8},金币{9}",a+1,wj.Hp,wj.Atk,wj.Dfs,wj.relKey,wj.BlueKey,wj.RedKey,wj.Level,wj.Exp,wj.Money);
-                element[a].map1s.Fill_Map();
-                element[a].map1s.Fill_Map2();
-                element[a].map1s.Boundary_Map();
-                element[a].map1s.maps[wj.x, wj.y] = '勇';
-                element[a].map1s.color_buffer[wj.x, wj.y] = ConsoleColor.Magenta;
-                Describe(element[a].map1s.maps, element[a].map1s.color_buffer);
-                Print(element[a].map1s.maps, element[a].map1s.color_buffer);
-                Console.WriteLine(s);
-                m = MovePlye(wj);
+                Console.WriteLine("当前关卡{0},血量{1},攻击力{2},防御力{3},黄钥匙{4},蓝钥匙{5},红钥匙{6},等级{7},经验{8},金币{9}", level + 1,
+                    wj.Hp,
+                    wj.Atk, wj.Dfs, wj.relKey, wj.BlueKey, wj.RedKey, wj.Level, wj.Exp, wj.Money);
+                element[level].map1s.Fill_Map();
+                element[level].map1s.Fill_Map2();
+                element[level].map1s.Boundary_Map();
+                element[level].map1s.maps[wj.x, wj.y] = '勇';
+                element[level].map1s.color_buffer[wj.x, wj.y] = ConsoleColor.Magenta;
+                Describe(element[level].map1s.maps, element[level].map1s.color_buffer);
+                Print(element[level].map1s.maps, element[level].map1s.color_buffer);
+                Console.WriteLine(promptTxt);
+                m = MovePlayer(wj);
                 Console.Clear();
             }
+
             if (wj.Hp < 0)
             {
                 Console.WriteLine("玩家血量归零，游戏结束！");
@@ -719,7 +751,7 @@ namespace Tower
             {
                 Console.WriteLine("恭喜通关，游戏结束！");
             }
-            
+
             Console.ReadKey();
         }
     }
