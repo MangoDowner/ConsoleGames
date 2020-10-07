@@ -844,3 +844,48 @@ namespace Tower
         }
     }
 }
+eq.Add(next_PropPos, prop3);
+                    }
+                    else if (str[x] == 'p') //红宝石
+                    {
+                        Prop prop4 = new Prop();
+                        int next_PropPos = prop4.GemstoneRed(y, x);
+                        Em.eq.Add(next_PropPos, prop4);
+                    }
+                    else if (str[x] == 'm') //史莱姆
+                    {
+                        Monster ms1 = new Monster();
+                        int next_Mspos = ms1.Slime(y, x);
+                        Em.ms.Add(next_Mspos, ms1);
+                    }
+                    else if (str[x] == 'f') //小蝙蝠
+                    {
+                        Monster ms2 = new Monster();
+                        int next_Mspos = ms2.Bat(y, x);
+                        Em.ms.Add(next_Mspos, ms2);
+                    }
+                    else if (str[x] == 'g') //骷髅怪
+                    {
+                        Monster ms3 = new Monster();
+                        int next_Mspos = ms3.Skeleton(y, x);
+                        Em.ms.Add(next_Mspos, ms3);
+                    }
+                    else if (str[x] == 'j') //骷髅将军
+                    {
+                        Monster ms4 = new Monster();
+                        int next_Mspos = ms4.Skeleton2(y, x);
+                        Em.ms.Add(next_Mspos, ms4);
+                    }
+                    else if (str[x] == 's') //暗黑法师
+                    {
+                        Monster ms5 = new Monster();
+                        int next_Mspos = ms5.Master(y, x);
+                        Em.ms.Add(next_Mspos, ms5);
+                    }
+                }
+
+                y += 1;
+            }
+        }
+    }
+}
