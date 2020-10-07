@@ -45,7 +45,7 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '〓';
+                    maps[x, y] = '░';
                     color_buffer[x, y] = ConsoleColor.Yellow;
                 }
                 else if (pair.Value.type == ConsoleKey2.Blue)
@@ -53,7 +53,7 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '〓';
+                    maps[x, y] = '░';
                     color_buffer[x, y] = ConsoleColor.Blue;
                 }
                 else if (pair.Value.type == ConsoleKey2.red)
@@ -61,7 +61,7 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '〓';
+                    maps[x, y] = '░';
                     color_buffer[x, y] = ConsoleColor.Red;
                 }
             }
@@ -73,7 +73,7 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '剑';
+                    maps[x, y] = '✄';
                     color_buffer[x, y] = ConsoleColor.Magenta;
                 }
                 else if (pair.Value.Name == "圣盾")
@@ -81,7 +81,7 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '盾';
+                    maps[x, y] = '☂';
                     color_buffer[x, y] = ConsoleColor.DarkCyan;
                 }
                 else if (pair.Value.Name == "红血瓶")
@@ -89,7 +89,7 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '血';
+                    maps[x, y] = '♥';
                     color_buffer[x, y] = ConsoleColor.Red;
                 }
                 else if (pair.Value.Name == "蓝血瓶")
@@ -97,7 +97,7 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '血';
+                    maps[x, y] = '♥';
                     color_buffer[x, y] = ConsoleColor.Blue;
                 }
                 else if (pair.Value.Name == "蓝宝石")
@@ -125,49 +125,49 @@ namespace Tower
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '蝠';
+                    maps[x, y] = '✿';
                 }
                 else if (pair.Value.Name == "史莱姆")
                 {
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '姆';
+                    maps[x, y] = '❅';
                 }
                 else if (pair.Value.Name == "骷髅怪")
                 {
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '骷';
+                    maps[x, y] = '✡';
                 }
                 else if (pair.Value.Name == "骷髅将军")
                 {
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '军';
+                    maps[x, y] = '♘';
                 }
                 else if (pair.Value.Name == "暗黑法师")
                 {
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '法';
+                    maps[x, y] = '♗';
                 }
                 else if (pair.Value.Name == "巨人")
                 {
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '巨';
+                    maps[x, y] = '♖';
                 }
                 else if (pair.Value.Name == "魔王")
                 {
                     int x, y;
                     x = y = 0;
                     MapXy(pair.Key, out x, out y);
-                    maps[x, y] = '魔';
+                    maps[x, y] = '♆';
                     color_buffer[x, y] = ConsoleColor.Red;
                 }
             }
@@ -709,7 +709,7 @@ namespace Tower
                         Console.ForegroundColor = b[i, j];
                         Console.Write(a[i, j]);
 
-                        Console.Write(" ");
+//                        Console.Write(" ");
                         continue;
                     }
 
@@ -734,7 +734,7 @@ namespace Tower
                 element[level].map1s.Fill_Map();
                 element[level].map1s.Fill_Map2();
                 element[level].map1s.Boundary_Map();
-                element[level].map1s.maps[wj.x, wj.y] = '勇';
+                element[level].map1s.maps[wj.x, wj.y] = '♪';
                 element[level].map1s.color_buffer[wj.x, wj.y] = ConsoleColor.Magenta;
                 Describe(element[level].map1s.maps, element[level].map1s.color_buffer);
                 Print(element[level].map1s.maps, element[level].map1s.color_buffer);
