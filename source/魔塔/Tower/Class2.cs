@@ -359,7 +359,6 @@ namespace Tower
                     if (maps[i, j] < 128)
                     {
                         Console.Write(maps[i, j]);
-                        Console.Write(" ");
                         continue;
                     }
 
